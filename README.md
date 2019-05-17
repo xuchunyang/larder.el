@@ -1,6 +1,6 @@
 # An Emacs client for [Larder: bookmarking for developers.](https://larder.io/)
 
-[![Build Status](https://travis-ci.org/xuchunyang/larder.el.svg?branch=master)](https://travis-ci.org/xuchunyang/larder.el)
+[![Build Status](https://travis-ci.org/xuchunyang/larder.el.svg?branch=master)](https://travis-ci.org/xuchunyang/larder.el) (Green means byte compiling without errors/warnings, I have not written any tests)
 
 ## Requires
 
