@@ -1,5 +1,7 @@
 # An Emacs client for [Larder: bookmarking for developers.](https://larder.io/)
 
+[![Build Status](https://travis-ci.org/xuchunyang/larder.el.svg?branch=master)](https://travis-ci.org/xuchunyang/larder.el)
+
 ## Requires
 
 - Emacs 25.1 or later
