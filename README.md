@@ -21,3 +21,8 @@ List your bookmarks in Org mode.
 ### `M-x larder-list-bookmarks`
 
 List your bookmarks in the boring Tabulated List mode.
+
+## Features / To-do list
+
+- [x] List Bookmarks
+- [ ] Add/Delete/Edit a bookmark
