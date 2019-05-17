@@ -103,12 +103,6 @@
         (setq rest (seq-difference rest done)))
       tree)))
 
-(defun larder--print-folders-tree (tree level)
-  (when (> level 0)
-    (insert (format "%s %s\n" (make-string level ?*) (alist-get 'name (car tree)))))
-  (dolist (x (cdr tree))
-    (larder--print-folders-tree x (1+ level))))
-
 (defvar larder--folders nil
   "A list of folders.")
 (defvar larder--bookmarks nil
