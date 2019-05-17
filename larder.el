@@ -112,13 +112,13 @@
 (defun larder--cache ()
   (unless larder--folders
     (setq larder--folders (larder--folders)))
-  (seq-map-indexed
-   (lambda (folder idx)
-     (unless (assoc folder larder--bookmarks)
-       (let-alist folder
-         (push (cons folder (larder--bookmarks .id)) larder--bookmarks)
-         (message "[%d/%d] Fetching bookmarks in %s..." (1+ idx) (length larder--folders) .name))))
-   larder--folders))
+  (let ((idx 1))
+    (dolist (folder larder--folders)
+      (unless (assoc folder larder--bookmarks)
+        (let-alist folder
+          (push (cons folder (larder--bookmarks .id)) larder--bookmarks)
+          (message "[%d/%d] Fetching bookmarks in %s..." idx (length larder--folders) .name)))
+      (setq idx (1+ idx)))))
 
 (declare-function org-make-link-string "org" (link &optional description))
 
