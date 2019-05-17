@@ -25,4 +25,5 @@ List your bookmarks in the boring Tabulated List mode.
 ## Features / To-do list
 
 - [x] List Bookmarks
+- [ ] Search bookmarks using the similiar syntax at https://larder.io/home/f/all/all/
 - [ ] Add/Delete/Edit a bookmark
