@@ -16,14 +16,18 @@ Visit https://larder.io/apps/clients/ to get your API token, add the follwing to
 
 ### `M-x larder-org`
 
-List your bookmarks in Org mode.
+List bookmarks in Org mode.
 
 ### `M-x larder-list-bookmarks`
 
-List your bookmarks in the boring Tabulated List mode.
+List bookmarks in the boring Tabulated List mode.
+
+### `M-x larder-helm`
+
+Search bookmarks using Helm.
 
 ## Features / To-do list
 
 - [x] List Bookmarks
-- [ ] Search bookmarks using the similiar syntax at https://larder.io/home/f/all/all/
+- [x] Search bookmarks using the similiar syntax at https://larder.io/home/f/all/all/
 - [ ] Add/Delete/Edit a bookmark

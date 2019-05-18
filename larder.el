@@ -175,5 +175,43 @@
           (nreverse result)))
   (tabulated-list-print))
 
+(declare-function helm "helm" (&rest plist))
+(declare-function helm-build-sync-source "helm-source" (name &rest args))
+(declare-function helm-make-actions "helm-lib" (&rest args))
+(declare-function helm-marked-candidates "helm" (&rest args))
+
+;;;###autoload
+(defun larder-helm ()
+  (interactive)
+  (larder--cache)
+  (helm :sources
+        (helm-build-sync-source "Larder Search"
+          :candidates
+          (let (candidates)
+            (pcase-dolist (`(,_ . ,bookmarks) larder--bookmarks)
+              (dolist (bookmark bookmarks)
+                (let-alist bookmark
+                  (push (cons (mapconcat
+                               #'identity
+                               (delq nil
+                                     (list .title
+                                           .description
+                                           (and .tags
+                                                (mapconcat
+                                                 (lambda (tag)
+                                                   (concat "#" (alist-get 'name tag)))
+                                                 .tags " "))))
+                               "\n")
+                              bookmark)
+                        candidates))))
+            (nreverse candidates))
+          :action (helm-make-actions
+                   "Browse URL"
+                   (lambda (_candidate)
+                     (dolist (bookmark (helm-marked-candidates))
+                       (let-alist bookmark
+                         (browse-url .url)))))
+          :multiline t)))
+
 (provide 'larder)
 ;;; larder.el ends here
