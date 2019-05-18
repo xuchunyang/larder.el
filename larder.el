@@ -190,6 +190,7 @@
 (defun larder-helm ()
   (interactive)
   (larder--cache)
+  (require 'helm)
   (helm :sources
         (helm-build-sync-source "Larder Search"
           :candidates
