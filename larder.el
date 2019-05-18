@@ -29,7 +29,13 @@
 
 (eval-when-compile (require 'let-alist))
 
+;; It's fine even `auth-source' and `seq' is not loaded explicitly, because:
+;; `url' -> `auth-source'
+;; `json' -> `map' -> `seq'
+;; However, it is better to load them explicitly.
+(require 'auth-source)
 (require 'json)
+(require 'seq)
 (require 'url)
 
 (defvar url-http-end-of-headers)
