@@ -70,7 +70,8 @@
   (let (results)
     (while url
       (with-current-buffer
-          (let ((url-request-extra-headers (larder--request-headers)))
+          (let ((url-request-extra-headers (larder--request-headers))
+                (url-show-status nil))
             (url-retrieve-synchronously url))
         (set-buffer-multibyte t)
         (goto-char url-http-end-of-headers)
@@ -118,13 +119,15 @@
 (defun larder--cache ()
   (unless larder--folders
     (setq larder--folders (larder--folders)))
-  (let ((idx 1))
+  (let ((total (apply #'+ (mapcar (lambda (x) (let-alist x .links)) larder--folders)))
+        (downloaded 0))
     (dolist (folder larder--folders)
-      (unless (assoc folder larder--bookmarks)
-        (let-alist folder
-          (push (cons folder (larder--bookmarks .id)) larder--bookmarks)
-          (message "[%d/%d] Fetching bookmarks in %s..." idx (length larder--folders) .name)))
-      (setq idx (1+ idx)))))
+      (let-alist folder
+        (unless (assoc folder larder--bookmarks)
+          (message (concat "[%" (number-to-string (length (format "%s" total))) "d/%d] Fetching bookmarks...")
+                   downloaded total)
+          (push (cons folder (larder--bookmarks .id)) larder--bookmarks))
+        (cl-incf downloaded (length (assoc-default folder larder--bookmarks)))))))
 
 (declare-function org-make-link-string "org" (link &optional description))
 
