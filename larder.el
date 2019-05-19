@@ -283,6 +283,7 @@
                  (tags   . ,tags)
                  ,@(and description `((description . ,description))))))
     (let ((response (larder--post "https://larder.io/api/1/@me/links/add/" alist)))
+      ;; FIXME Check `url-http-response-status' instead
       (let-alist response
         (if .title
             (message "Bookmark '%s' add successfully" .title)
