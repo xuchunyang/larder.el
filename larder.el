@@ -262,7 +262,7 @@
                     (cl-loop for f in larder--folders
                              when (string= name (alist-get 'name f))
                              return (alist-get 'id f)))))
-        (tag (split-string (read-string "Tags (Optional, separated by spaces): ")))
+        (tag (vconcat (split-string (read-string "Tags (Optional, separated by spaces): "))))
         (description (string-trim (read-string "Description (Optional): "))))
     (and (string-empty-p title) (setq title nil))
     (and (string-empty-p url) (setq url nil))
