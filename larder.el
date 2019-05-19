@@ -243,11 +243,15 @@
                          (browse-url .url)))))
           :multiline t)))
 
+(defvar eww-data)
+
 (defun larder--add-bookmark-read-args ()
   (let ((title (string-trim
-                (read-string "Title: " (plist-get eww-data :title))))
+                (read-string "Title: " (and (bound-and-true-p eww-data)
+                                            (plist-get eww-data :title)))))
         (url (string-trim
-              (read-string "URL: " (plist-get eww-data :url))))
+              (read-string "URL: " (and (bound-and-true-p eww-data)
+                                        (plist-get eww-data :url)))))
         (parent (progn
                   (unless larder--folders
                     (setq larder--folders (larder--folders)))
