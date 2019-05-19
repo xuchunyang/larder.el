@@ -250,6 +250,7 @@ DATA is a alist."
 
 (defvar eww-data)
 
+;; TODO: Verify input in time or switch to (info "(widget) Top")
 (defun larder--add-bookmark-read-args ()
   (let ((title (string-trim
                 (read-string "Title: " (and (bound-and-true-p eww-data)
