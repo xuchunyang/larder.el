@@ -27,7 +27,9 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'let-alist))
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'let-alist))
 
 ;; It's fine even `auth-source' and `seq' is not loaded explicitly, because:
 ;; `url' -> `auth-source'
@@ -36,7 +38,9 @@
 (require 'auth-source)
 (require 'json)
 (require 'seq)
+(require 'subr-x)                       ; `string-trim'
 (require 'url)
+
 
 (defvar url-http-end-of-headers)
 
@@ -53,9 +57,9 @@
   "Visit URL `https://larder.io/apps/clients/' to get your token."
   :type 'string)
 
-(defun larder--request-headers ()
+(defun larder--auth-header ()
   (if larder-token
-      (list (cons "Authorization" (format "Token %s" larder-token)))
+      (cons "Authorization" (format "Token %s" larder-token))
     (user-error "`larder-token' is not set")))
 
 (defun larder--json-read ()
@@ -70,7 +74,7 @@
   (let (results)
     (while url
       (with-current-buffer
-          (let ((url-request-extra-headers (larder--request-headers))
+          (let ((url-request-extra-headers (list (larder--auth-header)))
                 (url-show-status nil))
             (url-retrieve-synchronously url))
         (set-buffer-multibyte t)
@@ -79,6 +83,22 @@
           (setq url .next)
           (setq results (nconc results .results)))))
     results))
+
+(defun larder--post (url data)
+  "Make a POST request to URL with DATA (an alist)."
+  (with-current-buffer
+      (let ((url-request-extra-headers
+             (list (larder--auth-header)
+                   (cons "Content-Type" "application/json")))
+            (url-request-method "POST")
+            (url-request-data (encode-coding-string
+                               (json-encode-alist data)
+                               'utf-8))
+            (url-show-status nil))
+        (url-retrieve-synchronously url))
+    (set-buffer-multibyte t)
+    (goto-char url-http-end-of-headers)
+    (larder--json-read)))
 
 (defun larder--folders ()
   (larder--get "https://larder.io/api/1/@me/folders/"))
@@ -222,6 +242,49 @@
                        (let-alist bookmark
                          (browse-url .url)))))
           :multiline t)))
+
+(defun larder--add-bookmark-read-args ()
+  (let ((title (string-trim
+                (read-string "Title: " (plist-get eww-data :title))))
+        (url (string-trim
+              (read-string "URL: " (plist-get eww-data :url))))
+        (parent (progn
+                  (unless larder--folders
+                    (setq larder--folders (larder--folders)))
+                  (let ((name (let ((completion-ignore-case t))
+                                (completing-read "Folder: "
+                                                 ;; FIXME name maybe not unique, use path instead
+                                                 (cl-loop for f in larder--folders
+                                                          collect (alist-get 'name f))
+                                                 nil t))))
+                    (cl-loop for f in larder--folders
+                             when (string= name (alist-get 'name f))
+                             return (alist-get 'id f)))))
+        (tag (split-string (read-string "Tags (Optional, separated by spaces): ")))
+        (description (string-trim (read-string "Description (Optional): "))))
+    (and (string-empty-p title) (setq title nil))
+    (and (string-empty-p url) (setq url nil))
+    (and (string-empty-p parent) (setq parent nil))
+    (and (string-empty-p description) (setq description nil))
+    (list title url parent tag description)))
+
+;;;###autoload
+(defun larder-add-bookmark (title url parent tags description)
+  (interactive (larder--add-bookmark-read-args))
+  (unless url
+    (user-error "URL cannot be empty"))
+  (unless parent
+    (user-error "Parent cannot be empty"))
+  (let ((alist `(,@(and title `((title  . ,title)))
+                 (url    . ,url)
+                 (parent . ,parent)
+                 (tags   . ,tags)
+                 ,@(and description `((description . ,description))))))
+    (let ((response (larder--post "https://larder.io/api/1/@me/links/add/" alist)))
+      (let-alist response
+        (if .title
+            (message "Bookmark '%s' add successfully" .title)
+          (message "Error: %s" .error))))))
 
 (provide 'larder)
 ;;; larder.el ends here
