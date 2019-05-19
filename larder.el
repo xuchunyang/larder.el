@@ -60,7 +60,9 @@
 
 (defun larder--auth-header ()
   (if larder-token
-      (cons "Authorization" (format "Token %s" larder-token))
+      (cons "Authorization"
+            (format "Token %s"
+                    (encode-coding-string larder-token 'utf-8)))
     (user-error "`larder-token' is not set")))
 
 (defun larder--json-read ()
