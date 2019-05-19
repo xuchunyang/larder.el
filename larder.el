@@ -256,7 +256,9 @@
                                                  ;; FIXME name maybe not unique, use path instead
                                                  (cl-loop for f in larder--folders
                                                           collect (alist-get 'name f))
-                                                 nil t))))
+                                                 nil t
+                                                 (cl-loop for f in larder--folders
+                                                          return (alist-get 'name f))))))
                     (cl-loop for f in larder--folders
                              when (string= name (alist-get 'name f))
                              return (alist-get 'id f)))))
