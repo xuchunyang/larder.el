@@ -43,6 +43,7 @@
 
 
 (defvar url-http-end-of-headers)
+(defvar url-http-response-status)
 
 (defgroup larder nil
   "An Emacs client for Larder <https://larder.io/>."
@@ -85,7 +86,9 @@
     results))
 
 (defun larder--post (url data)
-  "Make a POST request to URL with DATA (an alist)."
+  "Make a POST request to URL and return (status-code . content).
+
+DATA is a alist."
   (with-current-buffer
       (let ((url-request-extra-headers
              (list (larder--auth-header)
@@ -98,7 +101,7 @@
         (url-retrieve-synchronously url))
     (set-buffer-multibyte t)
     (goto-char url-http-end-of-headers)
-    (larder--json-read)))
+    (cons url-http-response-status (larder--json-read))))
 
 (defun larder--folders ()
   (larder--get "https://larder.io/api/1/@me/folders/"))
@@ -281,17 +284,21 @@
     (user-error "URL cannot be empty"))
   (unless parent
     (user-error "Parent cannot be empty"))
-  (let ((alist `(,@(and title `((title  . ,title)))
-                 (url    . ,url)
-                 (parent . ,parent)
-                 (tags   . ,tags)
-                 ,@(and description `((description . ,description))))))
-    (let ((response (larder--post "https://larder.io/api/1/@me/links/add/" alist)))
-      ;; FIXME Check `url-http-response-status' instead
-      (let-alist response
-        (if .title
-            (message "Bookmark '%s' add successfully" .title)
-          (message "Error: %s" .error))))))
+  (pcase (larder--post "https://larder.io/api/1/@me/links/add/"
+                       `(,@(and title `((title  . ,title)))
+                         (url    . ,url)
+                         (parent . ,parent)
+                         (tags   . ,tags)
+                         ,@(and description `((description . ,description)))))
+    (`(201 . ,alist)
+     (message "Bookmark '%s' add successfully" (alist-get 'title alist)))
+    (`(,code . ,alist)
+     (message "Error (%d): %S"
+              code
+              ;; The documentation says there is an `error' field, but it is not
+              ;; always true, for example, when I send {"tags": "null"}, it responses:
+              ;; {"tags":["This field may not be null."]}
+              (or (alist-get 'error alist) alist)))))
 
 (provide 'larder)
 ;;; larder.el ends here
