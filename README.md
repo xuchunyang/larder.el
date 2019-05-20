@@ -26,6 +26,16 @@ List bookmarks in the boring Tabulated List mode.
 
 Search bookmarks using Helm.
 
+### `larder-add-bookmark`
+
+Add a bookmark via the Minibuffer.
+
+### `M-x larder-add-bookmark-widget`
+
+Add a bookmark via the Widget.
+
+![Screenshot of M-x larder-add-bookmark-widget](screenshots/larder-add-bookmark-widget-2019-05-20.png)
+
 ## Features / To-do list
 
 - [x] List Bookmarks
