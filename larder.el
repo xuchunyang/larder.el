@@ -40,7 +40,7 @@
 (require 'seq)
 (require 'subr-x)                       ; `string-trim'
 (require 'url)
-
+(require 'wid-edit)
 
 (defvar url-http-end-of-headers)
 (defvar url-http-response-status)
@@ -302,6 +302,69 @@ DATA is a alist."
               ;; always true, for example, when I send {"tags": "null"}, it responses:
               ;; {"tags":["This field may not be null."]}
               (or (alist-get 'error alist) alist)))))
+
+;;;###autoload
+(defun larder-add-bookmark-widget ()
+  (interactive)
+  (unless larder--folders
+    (setq larder--folders (larder--folders)))
+  (let ((folders (mapcar (lambda (x) (alist-get 'name x)) larder--folders))
+        url-widget
+        title-widget
+        tags-widget
+        description-widget
+        folder-widget)
+    (unless (equal folders (seq-uniq folders))
+      (error "Can't handle multiple folders with the same name"))
+
+    (switch-to-buffer "*Larder Add Bookmark**")
+    (kill-all-local-variables)
+    (let ((inhibit-read-only t))
+      (erase-buffer))
+    (remove-overlays)
+
+    (setq url-widget
+          (widget-create 'editable-field :format "URL:         %v\n" :size 50 :valid-regexp (rx bos (or "http" "https") "://")))
+    (setq title-widget
+          (widget-create 'editable-field :format "Title:       %v\n" :size 50))
+    (setq tags-widget
+          (widget-create 'editable-field :format "Tags:        %v\n" :size 50))
+    (setq description-widget
+          (widget-create 'editable-field :format "Description: %v\n" :size 50))
+    
+    (widget-insert "Folder:\n")
+    (setq folder-widget
+          (apply #'widget-create 'radio-button-choice
+                 :value (car folders)
+                 (mapcar (lambda (x) `(item ,x)) folders)))
+    (widget-insert "\n")
+    
+    (widget-create 'push-button
+                   :notify (lambda (&rest _)
+                             (when (widget-field-validate url-widget)
+                               (user-error "Invalid URL: '%s'" (widget-value url-widget)))
+                             (let* ((folder (widget-value folder-widget))
+                                    (parent (cl-loop for x in larder--folders
+                                                     when (string= folder (alist-get 'name x))
+                                                     return (alist-get 'id x)))
+                                    (url (string-trim (widget-value url-widget)))
+                                    (title (string-trim (widget-value title-widget)))
+                                    (tags (vconcat (split-string (widget-value tags-widget))))
+                                    (description (string-trim (widget-value description-widget))))
+                               (when (string-empty-p title) (setq title nil))
+                               (when (string-empty-p description) (setq description nil))
+                               (larder-add-bookmark title url parent tags description)))
+                   "Add Bookmark")
+    (widget-insert " ")
+    (widget-create 'push-button
+                   :notify (lambda (&rest _)
+                             (larder-add-bookmark-widget))
+                   "Reset Form")
+    (widget-insert "\n")
+    (use-local-map widget-keymap)
+    (widget-setup)
+    (goto-char (point-min))
+    (widget-forward 1)))
 
 (provide 'larder)
 ;;; larder.el ends here
