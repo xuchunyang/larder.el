@@ -246,6 +246,11 @@ DATA is a alist."
                      (dolist (bookmark (helm-marked-candidates))
                        (let-alist bookmark
                          (browse-url .url))))
+                   "EWW"
+                   (lambda (_candidate)
+                     (dolist (bookmark (helm-marked-candidates))
+                       (let-alist bookmark
+                         (eww .url))))
                    "Copy URL"
                    (lambda (_candidate)
                      (let ((urls (mapconcat (lambda (bookmark)
