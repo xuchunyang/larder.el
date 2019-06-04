@@ -210,7 +210,7 @@ DATA is a alist."
   (tabulated-list-print))
 
 (declare-function helm "helm" (&rest plist))
-(declare-function helm-build-sync-source "helm-source" (name &rest args))
+(declare-function helm-make-source "helm-source" (name class &rest args))
 (declare-function helm-make-actions "helm-lib" (&rest args))
 (declare-function helm-marked-candidates "helm" (&rest args))
 
@@ -220,7 +220,7 @@ DATA is a alist."
   (larder--cache)
   (require 'helm)
   (helm :sources
-        (helm-build-sync-source "Larder Search"
+        (helm-make-source "Larder Search" 'helm-source-sync
           :candidates
           (let (candidates)
             (pcase-dolist (`(,_ . ,bookmarks) larder--bookmarks)
